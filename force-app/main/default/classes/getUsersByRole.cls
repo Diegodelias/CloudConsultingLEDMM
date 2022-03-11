@@ -1,4 +1,5 @@
 public class getUsersByRole {
+    @AuraEnabled(cacheable=true)
     public static List<User> getUsers(Date startDate, Date endDate, List<String> roleList) {
 
         List<Resource__c> resList = new List<Resource__c>();
@@ -16,4 +17,23 @@ public class getUsersByRole {
         
         return avaiableUsers;
     }
+
+    @AuraEnabled(cacheable=true)
+    public static List<User> getUsersById(List<Id> idList) {
+        List<User> userList = [SELECT Id, Name, Role FROM User WHERE Id in :idList];
+        return userList;
+    }
+
+    @AuraEnabled(cacheable=true)
+    public static List<Date> getProjectDates(List<Id> idList) {
+        List<User> userList = [SELECT Id, Name, Role FROM User WHERE Id in :idList];
+        return userList;
+    }
+
+    @AuraEnabled(cacheable=true)
+    public static Id getProjectId() {  
+        return UserInfo.getUserId()
+    }
+
+    
 }

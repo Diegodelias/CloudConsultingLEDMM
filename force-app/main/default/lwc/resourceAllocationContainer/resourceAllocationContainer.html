@@ -1,0 +1,17 @@
+<template>
+    <template for:each={userRoles} for:item="role">
+        <lightning-layout-item key={role}>
+                <lightning-checkbox-group key={role} 
+                                        label={userId}
+                                        options={options}
+                                        role={role}
+                                        value={value}
+                                        onchange={handleChange}>
+                </lightning-checkbox-group>       
+                <c-user-date key={role}
+                            onsetdate={handlesetDate}>
+                </c-user-date>
+        </lightning-layout-item> 
+    </template>   
+    <lightning-button></lightning-button> <!-- insert button -->
+</template>

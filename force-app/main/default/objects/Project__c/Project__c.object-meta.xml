@@ -126,6 +126,7 @@
         <formFactor>Small</formFactor>
         <type>Default</type>
     </actionOverrides>
+<<<<<<< HEAD
     <actionOverrides>
         <actionName>View</actionName>
         <comment>Action override created by Lightning App Builder during activation.</comment>
@@ -136,6 +137,18 @@
     </actionOverrides>
     <actionOverrides>
         <actionName>View</actionName>
+=======
+    <!-- <actionOverrides>
+        <actionName>View</actionName>
+        <comment>Action override created by Lightning App Builder during activation.</comment>
+        <content>Project_Record_Page</content>
+        <formFactor>Large</formFactor>
+        <skipRecordTypeSelect>false</skipRecordTypeSelect>
+        <type>Flexipage</type>
+    </actionOverrides> -->
+    <actionOverrides>
+        <actionName>View</actionName>
+>>>>>>> 77126ed68732dfd3bf211b4ff13e45a4612a442f
         <type>Default</type>
     </actionOverrides>
     <actionOverrides>
