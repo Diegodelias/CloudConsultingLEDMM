@@ -1,7 +1,7 @@
 @isTest
 public class TestDataFactory {
     public static List<User> createAvaiableUser(Integer numUsrs, String usRole) {
-        UserRole usrRole = [SELECT Id FROM UserRole Where name = 'Developer'];
+        UserRole usrRole = [SELECT Id FROM UserRole Where name = :usRole];
         Profile prof = [SELECT Id, Name FROM Profile LIMIT 1];
         List<User> usrList = new List<User>();
         String dateString = String.valueof(Datetime.now().getTime());
