@@ -10,7 +10,7 @@
             </template>
         </template>
 
-        <p>0316</p>
+        <p>1529</p>
         <lightning-button variant="brand" label="Base" title="Looks like a link" onclick={handleClick} class="slds-m-left_x-small"></lightning-button>
 
         <template for:each={projectRolesRequired.data} for:item="Project">
@@ -24,6 +24,13 @@
                 <!-- Iterate Resources assigned -->
 
                 <!-- Iterate Resources available -->
+                <template for:each={resourcesAvailable} for:item="resource">
+                    <lightning-input key={resource.Id} label={resource.Name} value={resource.Id}>
+                    </lightning-input> 
+                    <lightning-input key={resource.Id} type="date" name="Start Date" label="Enter a date"></lightning-input>              
+                    <lightning-input key={resource.Id} type="date" name="End Date" label="Enter a date"></lightning-input>
+                </template>
+ 
 
             </template>
 

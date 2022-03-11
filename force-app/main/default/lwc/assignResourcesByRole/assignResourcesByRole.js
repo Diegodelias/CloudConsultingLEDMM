@@ -1,5 +1,6 @@
 import { api, LightningElement, wire } from 'lwc';
 import getProjectRolesRequired from '@salesforce/apex/ProjectData.getProjectRolesRequired';
+import getUsers from '@salesforce/apex/ProjectData.getUsers';
 
 
 export default class AssignResourcesByRole extends LightningElement {
@@ -11,6 +12,9 @@ export default class AssignResourcesByRole extends LightningElement {
 
     @wire(getProjectRolesRequired, { projectId: '$recordId' })
     projectRolesRequired;
+
+    @wire(getUsers, { startDate: Date.parse("Aug 9, 1995"), endDate: Date.parse("Aug 15, 1995"), roleList: ['Consultant', 'Developer', 'Architect', 'Squad lead']  })
+    resourcesAvailable;
 
     handleClick() {
         console.log('this.projectRolesRequired');
