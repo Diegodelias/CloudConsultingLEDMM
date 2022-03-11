@@ -5,29 +5,19 @@ import getProjectRolesRequired from '@salesforce/apex/ProjectData.getProjectRole
 export default class AssignResourcesByRole extends LightningElement {
     @api recordId;
 
-    projectRolesRequired;
+    cardTitle;
+
+    projectName;
 
     @wire(getProjectRolesRequired, { projectId: '$recordId' })
-    projRolesRequired(data, error) {
-        if (data) {
-        this.projectRolesRequired = data;
-            console.log('this.projectRolesRequired');
-            console.log(this.recordId);
-            console.log(this.projectRolesRequired);
-        } else if(error) {
-            console.log('ERROR en APEX');
-            console.log(error);
-            this.projectRolesRequired = undefined;
-            this.error = error;
-        }
-    }
-
+    projectRolesRequired;
 
     handleClick() {
         console.log('this.projectRolesRequired');
         console.log(this.recordId);
         console.log(this.projectRolesRequired);
-    /*
+        console.log(this.projectRolesRequired.data.Name);
+        /*
         getProjectRolesRequired({ projectId: '$recordId' })
             .then((result) => {
                 this.projectRolesRequired = result;
