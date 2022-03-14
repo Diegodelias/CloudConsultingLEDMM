@@ -1,8 +1,10 @@
-public with sharing class projectDataService {
+public without sharing class projectDataService {
 
-    @AuraEnabled(cacheable=false)
-    public static Project__c getProjectRolesRequired(Id projectId) {
-        Project__c projectRolesRequired = [
+    @AuraEnabled(cacheable=true)
+    public static List<Project__c> getProjectRolesRequired(Id projectId) {
+        System.debug(projectId);
+
+        List<Project__c> projectRolesRequired = [
             SELECT Name, Start_Date__c, End_Date__c, Hours_Sold__c, Status__c,
                 (
                     SELECT Hours_Covered__c, Hours_Required__c, Role__c 
