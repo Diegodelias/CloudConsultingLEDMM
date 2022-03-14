@@ -1,0 +1,16 @@
+h1 {
+    padding: 5px;
+    font-weight: bolder;
+}
+.margin-not-null {
+    margin: 0px 1%; /*var(--lwc-spacingNone, 0)*/ 
+}
+.role-assign {
+    margin-top: 15px;
+}
+.hours-input {
+    width: 50px;
+}
+.div-nowrap {
+    white-space: nowrap;
+}

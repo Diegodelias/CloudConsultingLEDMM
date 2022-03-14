@@ -1,0 +1,88 @@
+<template>
+
+    <lightning-card title="Resources Assignment by role" icon-name="standard:user_role">
+        <template if:true={projectRolesRequired.data}>
+            <p>1359</p>
+            <template for:each={projectRolesRequired.data} for:item="Project">
+            <!--h1>{projectRolesRequired.data.Name}</h1-->
+            <h1 key={Project.Id}>From {templProjectStartDate} <!--{Project.Start_Date__c} -->
+                to {Project.End_Date__c}. {Project.Hours_Sold__c}hs. sold.</h1>
+            <!--h1>Status: {projectRolesRequired.data.Status__c}</h1-->
+            </template>
+        </template>
+
+        <template if:true={templProjectRolesRequired}><!--projectRolesRequired.data-->
+            <template for:each={templProjectRolesRequired} for:item="Project"><!--projectRolesRequired.data-->
+            <!--p key={Project.Id}>Here</p-->
+                <template if:true={Project.Roles__r}>
+
+                    <!--lightning-record-edit-form key={Project.Id} object-api-name={Resource__c} onsubmit={handleSubmit} onsuccess={handleSuccess}-->
+
+                    <!-- Iterate Roles required with Hours -->
+                    <template for:each={Project.Roles__r} for:item="Role">
+                        <h1 class="role-assign" key={Role.Id}>Role Assigns for "{Role.Role__c}". {Role.Hours_Covered__c} of {Role.Hours_Required__c}hs.</h1>
+
+                        <!-- Iterate Resources assigned -->
+
+                        <!-- Iterate Resources available -->
+                        <template if:true={Role.UsersAvailable}>
+
+                                <template for:each={Role.UsersAvailable} for:item="resource" for:index="index">
+                                    <div class="slds-grid" key={resource.Id} id={resource.Id}>
+                                        <div class="slds-col margin-not-null div-nowrap">
+                                            <label class="slds-form-element__label" for={resource.Id}>Select User</label>
+                                            <lightning-input id={resource.Id} key={resource.Id} type="checkbox" label={resource.Name} data-id={resource.Id} value={resource.Id}></lightning-input>
+                                        </div>
+                                        <div class="slds-col margin-not-null">
+                                            <lightning-input key={resource.Id} type="date" name="start-date" label="Start Date"></lightning-input>
+                                        </div>
+                                        <div class="slds-col margin-not-null">
+                                            <lightning-input key={resource.Id} type="date" name="end-date" label="End Date"></lightning-input>
+                                        </div>
+                                        <div class="slds-col margin-not-null">
+                                            <lightning-input class="hours-input" key={resource.Id} type="number" name="hours" label="Hours"></lightning-input>
+                                        </div>
+                                    </div>
+                                </template><!--{resource.UserRole.Name}-->
+                            
+                                <!--div class="slds-grid slds-form-element" key={Role.Id}>
+                                    <label class="slds-form-element__label" for={Role.Id}>Select User</label>
+                                    <div class="slds-form-element__control"><div class="slds-select_container">
+                                        <select name="resource-id" class="slds-select" id={Role.Id}>
+                                        <option value="">Select…</option>
+
+                                        <template for:each={Role.UsersAvailable} for:item="resource" for:index="index">
+                                            <option key={resource.Id} value={resource.Id}>{resource.Name}</option>
+                                        </template>
+
+                                        </select>
+                                    </div></div>
+                                </div>
+                                <div class="slds-col margin-not-null" key={Role.Id}>
+                                    <lightning-input key={resource.Id} type="date" name="start-date" label="Start Date"></lightning-input>
+                                </div>
+                                <div class="slds-col margin-not-null" key={Role.Id}>
+                                    <lightning-input key={resource.Id} type="date" name="end-date" label="End Date"></lightning-input>
+                                </div-->
+
+
+                        </template>
+
+                    </template>
+
+                    <!-- Submit Buttom -->
+                    <div key={Project.Id} class="slds-align_absolute-center" style="margin-top: 8px">
+                        <lightning-button label="Save" icon-name="utility:save" onclick={handleInsertSelectedResources}></lightning-button>
+                    </div>
+
+                <!--/lightning-record-edit-form-->
+
+                </template>
+            </template>
+        </template>
+
+        <!--lightning-button variant="brand" label="Base" title="Console Log additional info" onclick={handleClick} class="slds-m-left_x-small"></lightning-button-->
+
+    </lightning-card>
+
+</template>
