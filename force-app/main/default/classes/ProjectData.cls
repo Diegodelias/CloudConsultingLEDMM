@@ -52,7 +52,7 @@ public without sharing class ProjectData {
     }
 
 
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled(cacheable=false)
     public static List<Resource__c> insertUsersToProject(Id projectId, Date startDate, Date endDate, List<Id> usersId) {
         List<Resource__c> resources = new List<Resource__c>();
 

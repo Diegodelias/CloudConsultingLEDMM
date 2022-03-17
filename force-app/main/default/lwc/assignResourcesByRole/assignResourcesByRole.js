@@ -75,7 +75,19 @@ export default class AssignResourcesByRole extends LightningElement {
         console.log('event.detail' + event.detail);
         let checkboxsSelected = [...this.template.querySelectorAll('lightning-input')]
             .filter(element => element.checked)
-            .map(element => element.dataset.id);
+            .map(element => [element.dataset.id, element.dataset.role]);
+        console.log(checkboxsSelected);
+
+        let datesArr; // = [];
+        checkboxsSelected.forEach((userIdRoleArr, idx) => {
+            console.log(idx);
+            console.log(userIdRoleArr);
+            datesArr = [...this.template.querySelectorAll('lightning-input')]
+            .filter(element => (element.key.value == userIdRoleArr[idx]) && (element.name.value == 'start-date'))
+            .map(element => console.log(element.value));
+        })
+        console.log(datesArr);
+
         if (checkboxsSelected.length > 0) {
             insertUsersToProject({projectId: this.recordId, startDate: this.projectStartDate, endDate: this.projectEndDate, usersId: checkboxsSelected})
             .then((result) => {
@@ -90,6 +102,7 @@ export default class AssignResourcesByRole extends LightningElement {
 
         }
         console.log(checkboxsSelected);
+        console.log(datesArr);
 
     }
 
@@ -105,7 +118,7 @@ export default class AssignResourcesByRole extends LightningElement {
         this.dispatchEvent( new ShowToastEvent({
             title: 'Users Assigned!',
             message: '',
-            variant: 'succes'
+            variant: 'success'
         }));
     }
 

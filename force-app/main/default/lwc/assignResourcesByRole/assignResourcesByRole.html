@@ -2,7 +2,7 @@
 
     <lightning-card title="Resources Assignment by role" icon-name="standard:user_role">
         <template if:true={projectRolesRequired.data}>
-            <p>1359</p>
+            <p>0222</p>
             <template for:each={projectRolesRequired.data} for:item="Project">
             <!--h1>{projectRolesRequired.data.Name}</h1-->
             <h1 key={Project.Id}>From {templProjectStartDate} <!--{Project.Start_Date__c} -->
@@ -31,13 +31,14 @@
                                     <div class="slds-grid" key={resource.Id} id={resource.Id}>
                                         <div class="slds-col margin-not-null div-nowrap">
                                             <label class="slds-form-element__label" for={resource.Id}>Select User</label>
-                                            <lightning-input id={resource.Id} key={resource.Id} type="checkbox" label={resource.Name} data-id={resource.Id} value={resource.Id}></lightning-input>
+                                            <lightning-input id={resource.Id} key={resource.Id} type="checkbox" label={resource.Name}
+                                                data-id={resource.Id} data-role={resource.UserRole.Name} value={resource.Id}></lightning-input>
                                         </div>
                                         <div class="slds-col margin-not-null">
-                                            <lightning-input key={resource.Id} type="date" name="start-date" label="Start Date"></lightning-input>
+                                            <lightning-input key={resource.Id} type="date" name="start-date" label="Start Date" value=""></lightning-input>
                                         </div>
                                         <div class="slds-col margin-not-null">
-                                            <lightning-input key={resource.Id} type="date" name="end-date" label="End Date"></lightning-input>
+                                            <lightning-input key={resource.Id} type="date" name="end-date" label="End Date" value=""></lightning-input>
                                         </div>
                                         <div class="slds-col margin-not-null">
                                             <lightning-input class="hours-input" key={resource.Id} type="number" name="hours" label="Hours"></lightning-input>
