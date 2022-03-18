@@ -17,5 +17,6 @@ h1 {
     width: 50px;
 }
 .div-nowrap {
+    /* @sldsValidatorIgnore */
     white-space: nowrap;
 }
