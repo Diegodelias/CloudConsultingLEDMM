@@ -1,12 +1,17 @@
 h1 {
     padding: 5px;
     font-weight: bolder;
+    font-size: 14px;
 }
 .margin-not-null {
     margin: 0px 1%; /*var(--lwc-spacingNone, 0)*/ 
 }
 .role-assign {
     margin-top: 15px;
+    font-size: 14px;
+}
+.date-input {
+    width: 115px;
 }
 .hours-input {
     width: 50px;
