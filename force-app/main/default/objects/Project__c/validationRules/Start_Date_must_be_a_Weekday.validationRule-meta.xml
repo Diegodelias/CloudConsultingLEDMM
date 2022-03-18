@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Start_Date_must_be_a_Weekday</fullName>
+    <active>true</active>
+    <errorConditionFormula>(WEEKDAY( Start_Date__c ) == 1)||(WEEKDAY( Start_Date__c ) == 7)</errorConditionFormula>
+    <errorMessage>Start_Date_must_be_a_Weekday</errorMessage>
+</ValidationRule>
