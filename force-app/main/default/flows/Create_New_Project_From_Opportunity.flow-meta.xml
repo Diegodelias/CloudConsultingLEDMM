@@ -83,6 +83,12 @@
             </value>
         </inputAssignments>
         <inputAssignments>
+            <field>OwnerId</field>
+            <value>
+                <elementReference>$Record.Project_Manager__c</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
             <field>Start_Date__c</field>
             <value>
                 <elementReference>$Record.Start_Date__c</elementReference>
@@ -92,6 +98,12 @@
             <field>Status__c</field>
             <value>
                 <stringValue>Pre-kickoff</stringValue>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>User__c</field>
+            <value>
+                <elementReference>$Record.Project_Manager__c</elementReference>
             </value>
         </inputAssignments>
         <object>Project__c</object>
