@@ -1,17 +1,27 @@
+<!-- sldsValidatorIgnore -->
 <template>
 
-    <lightning-card title="Resources Assignment by role" icon-name="standard:user_role">
+    <lightning-card title="Resources Assignment by Role" icon-name="standard:user_role">
         <template if:true={projectRolesRequired.data}>
-            <p>1359</p>
+            <!--p>2212</p-->
             <template for:each={projectRolesRequired.data} for:item="Project">
             <!--h1>{projectRolesRequired.data.Name}</h1-->
-            <h1 key={Project.Id}>From {templProjectStartDate} <!--{Project.Start_Date__c} -->
-                to {Project.End_Date__c}. {Project.Hours_Sold__c}hs. sold.</h1>
+            <h1 key={Project.Id}>From <lightning-formatted-date-time value={Project.Start_Date__c} year="numeric" month="2-digit" day="2-digit" time-zone="UTC"></lightning-formatted-date-time>&nbsp;<!--{Project.Start_Date__c} {templProjectStartDate} -->
+                to <lightning-formatted-date-time value={Project.End_Date__c} day="2-digit" month="2-digit" year="numeric" time-zone="UTC"></lightning-formatted-date-time>
+                . {Project.Hours_Sold__c}hs. sold.</h1>
             <!--h1>Status: {projectRolesRequired.data.Status__c}</h1-->
             </template>
         </template>
 
+        <template if:true={isLoading}>
+            <lightning-spinner></lightning-spinner>
+        </template>
+
+
         <template if:true={templProjectRolesRequired}><!--projectRolesRequired.data-->
+
+          <lightning-accordion allow-multiple-sections-open>
+
             <template for:each={templProjectRolesRequired} for:item="Project"><!--projectRolesRequired.data-->
             <!--p key={Project.Id}>Here</p-->
                 <template if:true={Project.Roles__r}>
@@ -20,53 +30,106 @@
 
                     <!-- Iterate Roles required with Hours -->
                     <template for:each={Project.Roles__r} for:item="Role">
-                        <h1 class="role-assign" key={Role.Id}>Role Assigns for "{Role.Role__c}". {Role.Hours_Covered__c} of {Role.Hours_Required__c}hs.</h1>
 
-                        <!-- Iterate Resources assigned -->
+                      <!-- Iterate Resources assigned -->
+                      <h1 class="role-assign" key={Role.Id}>Resources in "{Role.Role__c}" role. Covered {Role.Hours_Covered__c} of {Role.Hours_Required__c}hs.</h1>
+                      <template if:true={Role.AssignedResources}>
 
-                        <!-- Iterate Resources available -->
+                        <!--template for:each={Role.AssignedResources} for:item="assignedUser" for:index="index"></template-->
+                        <!--lightning-datatable key={Role.Id} key-field="id" data={Role.AssignedResources} columns={assignedResourcesDataColumns} show-row-number-column hide-checkbox-column></lightning-datatable-->
+
+                        <table key={Role.Id} class="slds-table slds-table_cell-buffer slds-table_bordered" aria-label="Assigned Resources">
+
+                            <thead>
+                              <tr class="slds-line-height_reset">
+                                <template for:each={assignedResourcesDataColumns} for:item="column" for:index="index">
+                                  <th class="" scope="col" key={column.fieldName}>
+                                    <div class="slds-truncate" title={column.label}>{column.label}</div>
+                                  </th>
+                                </template>
+                              </tr>
+                            </thead>
+
+                            <tbody>
+
+                              <template for:each={Role.AssignedResources} for:item="resource" for:index="index">
+                              <tr class="slds-hint-parent" key={resource.Id}>
+                                <td data-label="User">
+                                  <div class="slds-truncate" title={resource.User__r.Name}>{resource.User__r.Name}</div>
+                                </td>
+                                <td data-label="Role">
+                                  <div class="slds-truncate" title={resource.Role__c}>{resource.Role__c}</div>
+                                </td>
+                                <td data-label="Start Date">
+                                  <div class="slds-truncate" title={resource.Start_Date__c}>
+                                    <lightning-formatted-date-time value={resource.Start_Date__c} year="numeric" month="2-digit" day="2-digit" time-zone="UTC"></lightning-formatted-date-time>
+                                  </div>
+                                </td>
+                                <td data-label="End Date">
+                                  <div class="slds-truncate" title={resource.End_Date__c}>
+                                    <lightning-formatted-date-time value={resource.End_Date__c} year="numeric" month="2-digit" day="2-digit" time-zone="UTC"></lightning-formatted-date-time>
+                                  </div>
+                                </td>
+                                <td data-label="Hours">
+                                  <div class="slds-truncate" title={resource.Hours__c} style="text-align: center;">{resource.Hours__c}</div>
+                                </td>
+                              </tr>
+                              </template>
+
+                            </tbody>
+                          </table>
+
+                      </template>
+
+
+                      <!-- Iterate Resources available -->
+                      <lightning-accordion-section key={Role.Id} name="" label={Role.accordionLabel}><!-- "Resources available to assign for {Role.Role__c} role." -->
+                        <!--h1 class="role-assign" key={Role.Id}>Resources available to assign for "{Role.Role__c}" role.</h1-->
                         <template if:true={Role.UsersAvailable}>
 
-                                <template for:each={Role.UsersAvailable} for:item="resource" for:index="index">
-                                    <div class="slds-grid" key={resource.Id} id={resource.Id}>
-                                        <div class="slds-col margin-not-null div-nowrap">
-                                            <label class="slds-form-element__label" for={resource.Id}>Select User</label>
-                                            <lightning-input id={resource.Id} key={resource.Id} type="checkbox" label={resource.Name} data-id={resource.Id} value={resource.Id}></lightning-input>
-                                        </div>
-                                        <div class="slds-col margin-not-null">
-                                            <lightning-input key={resource.Id} type="date" name="start-date" label="Start Date"></lightning-input>
-                                        </div>
-                                        <div class="slds-col margin-not-null">
-                                            <lightning-input key={resource.Id} type="date" name="end-date" label="End Date"></lightning-input>
-                                        </div>
-                                        <div class="slds-col margin-not-null">
-                                            <lightning-input class="hours-input" key={resource.Id} type="number" name="hours" label="Hours"></lightning-input>
-                                        </div>
+                            <template for:each={Role.UsersAvailable} for:item="resource" for:index="index">
+                                <div class="slds-grid" key={resource.Id} id={resource.Id}>
+                                    <div class="slds-col margin-not-null div-nowrap">
+                                        <label class="slds-form-element__label" for={resource.Id}>Select User</label>
+                                        <lightning-input id={resource.Id} key={resource.Id} data-id={resource.Id} data-role={resource.UserRole.Name} type="checkbox"
+                                            label={resource.Name} value={resource.Id} onchange={handleResourceChecked}></lightning-input>
                                     </div>
-                                </template><!--{resource.UserRole.Name}-->
-                            
-                                <!--div class="slds-grid slds-form-element" key={Role.Id}>
-                                    <label class="slds-form-element__label" for={Role.Id}>Select User</label>
-                                    <div class="slds-form-element__control"><div class="slds-select_container">
-                                        <select name="resource-id" class="slds-select" id={Role.Id}>
-                                        <option value="">Select…</option>
-
-                                        <template for:each={Role.UsersAvailable} for:item="resource" for:index="index">
-                                            <option key={resource.Id} value={resource.Id}>{resource.Name}</option>
-                                        </template>
-
-                                        </select>
-                                    </div></div>
+                                    <div class="slds-col margin-not-null">
+                                        <lightning-input key={resource.Id} data-id={resource.Id} type="date" name="start-date" onchange={handleChangeDate} value="" disabled
+                                            label="Start Date" date-style="short" class="date-input"></lightning-input><!-- onfocusout={handleDateFocusOut}-->
+                                    </div>
+                                    <div class="slds-col margin-not-null">
+                                        <lightning-input key={resource.Id} data-id={resource.Id} type="date" name="end-date" onchange={handleChangeDate} value="" disabled
+                                            label="End Date" date-style="short" class="date-input"></lightning-input>
+                                    </div>
+                                    <div class="slds-col margin-not-null">
+                                        <lightning-input key={resource.Id} data-id={resource.Id} type="number" name="hours" value="" readonly label="Hours" class="hours-input"></lightning-input>
+                                    </div>
                                 </div>
-                                <div class="slds-col margin-not-null" key={Role.Id}>
-                                    <lightning-input key={resource.Id} type="date" name="start-date" label="Start Date"></lightning-input>
-                                </div>
-                                <div class="slds-col margin-not-null" key={Role.Id}>
-                                    <lightning-input key={resource.Id} type="date" name="end-date" label="End Date"></lightning-input>
-                                </div-->
+                            </template><!--{resource.UserRole.Name}-->
+                        
+                            <!--div class="slds-grid slds-form-element" key={Role.Id}>
+                                <label class="slds-form-element__label" for={Role.Id}>Select User</label>
+                                <div class="slds-form-element__control"><div class="slds-select_container">
+                                    <select name="resource-id" class="slds-select" id={Role.Id}>
+                                    <option value="">Select…</option>
 
+                                    <template for:each={Role.UsersAvailable} for:item="resource" for:index="index">
+                                        <option key={resource.Id} value={resource.Id}>{resource.Name}</option>
+                                    </template>
+
+                                    </select>
+                                </div></div>
+                            </div>
+                            <div class="slds-col margin-not-null" key={Role.Id}>
+                                <lightning-input key={resource.Id} type="date" name="start-date" label="Start Date"></lightning-input>
+                            </div>
+                            <div class="slds-col margin-not-null" key={Role.Id}>
+                                <lightning-input key={resource.Id} type="date" name="end-date" label="End Date"></lightning-input>
+                            </div-->
 
                         </template>
+                      </lightning-accordion-section>
 
                     </template>
 
@@ -79,6 +142,9 @@
 
                 </template>
             </template>
+
+          </lightning-accordion>
+
         </template>
 
         <!--lightning-button variant="brand" label="Base" title="Console Log additional info" onclick={handleClick} class="slds-m-left_x-small"></lightning-button-->
