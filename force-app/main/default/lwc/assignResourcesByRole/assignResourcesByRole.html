@@ -89,7 +89,7 @@
 
                             <template for:each={Role.UsersAvailable} for:item="resource" for:index="index">
                                 <div class="slds-grid" key={resource.Id} id={resource.Id}>
-                                    <div class="slds-col margin-not-null div-nowrap">
+                                    <div class="slds-col margin-not-null"><!-- div-nowrap-->
                                         <label class="slds-form-element__label" for={resource.Id}>Select User</label>
                                         <lightning-input id={resource.Id} key={resource.Id} data-id={resource.Id} data-role={resource.UserRole.Name} type="checkbox"
                                             label={resource.Name} value={resource.Id} onchange={handleResourceChecked}></lightning-input>
