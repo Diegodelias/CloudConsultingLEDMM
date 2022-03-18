@@ -12,15 +12,29 @@ import insertUsersToProject from '@salesforce/apex/ProjectData.insertUsersToProj
 import PROJECT_START_DATE from '@salesforce/schema/Project__c.Start_Date__c'
 import PROJECT_END_DATE from '@salesforce/schema/Project__c.End_Date__c'
 
+const AssignedResourcesDataColumns = [
+    { label: 'User',        fieldName: 'User__r.Name',      type: 'string'},
+    { label: 'Role',        fieldName: 'Role__c',           type: 'string' },
+    { label: 'Start Date',  fieldName: 'Start_Date__c',     type: 'date' },
+    { label: 'End Date',    fieldName: 'End_Date__c',       type: 'date' },
+    { label: 'Hours',       fieldName: 'Hours__c',          type: 'number' },
+];
+
 export default class AssignResourcesByRole extends LightningElement {
     @api recordId;
 
     projectStartDate;
     projectEndDate;
 
+    isLoading = true;
+
+    assignedResourcesDataColumns = AssignedResourcesDataColumns;
+
     wireResourcesAvailable;
+    wireProjectAssignedResources;
 
     templProjectRolesRequired;
+    projectAssignedResources;
     usersAvailableForProject;
 
     // updateRecord({ fields: { Id: this.recordId } });
@@ -28,8 +42,19 @@ export default class AssignResourcesByRole extends LightningElement {
     @wire(getProjectRolesRequired, { projectId: '$recordId' })
     projectRolesRequired;
 
-    @wire(getAssignedResources, { projectId: '$recordId' })
-    projectAssignedResources;
+    @wire(getAssignedResources, { projectId: '$recordId' }) // projectAssignedResources
+    wireGetProjectAssignedResources(result) {
+        this.wireProjectAssignedResources = result;
+        if(result.data) {
+            this.projectAssignedResources = result.data;
+            console.log('this.projectAssignedResources wire');
+            console.log(this.projectAssignedResources);
+            this.error = undefined;
+        } else if(result.error) {
+            this.error = result.error;
+            this.projectAssignedResources = undefined;
+        }
+    }
 
     get templProjectStartDate() {
         let retStartDate = '';
@@ -50,6 +75,7 @@ export default class AssignResourcesByRole extends LightningElement {
         if (result.data) {
             this.usersAvailableForProject = result.data;
             this.error = undefined;
+            console.log(this.projectAssignedResources); // .data
             console.log(this.usersAvailableForProject);
 
             this.templProjectRolesRequired = JSON.parse(JSON.stringify(this.projectRolesRequired.data));// [0]
@@ -58,6 +84,26 @@ export default class AssignResourcesByRole extends LightningElement {
             if (this.templProjectRolesRequired[0].Roles__r.length > 0) {
                 console.log(this.templProjectRolesRequired[0].Roles__r);
                 for (let rr = 0; rr < this.templProjectRolesRequired[0].Roles__r.length; rr++) {
+
+                    // add accordion label
+                    this.templProjectRolesRequired[0].Roles__r[rr]['accordionLabel'] = 'Resources available to assign for "' + 
+                        this.templProjectRolesRequired[0].Roles__r[rr].Role__c + '" role.';
+
+                    // add property 'AssignedResources' to actual Roles_r (Role required)
+                    this.templProjectRolesRequired[0].Roles__r[rr]['AssignedResources'] = false;
+                    for (let ar = 0; ar < this.projectAssignedResources.length; ar++) { // .data
+                        if (this.templProjectRolesRequired[0].Roles__r[rr].Role__c 
+                            == this.projectAssignedResources[ar].Role__c) { // .data
+                            console.log(this.projectAssignedResources[ar]); // .data
+                            if(this.templProjectRolesRequired[0].Roles__r[rr]['AssignedResources'] === false) {
+                                this.templProjectRolesRequired[0].Roles__r[rr]['AssignedResources'] = [];
+                            }
+                            this.templProjectRolesRequired[0].Roles__r[rr]['AssignedResources'].push(
+                                JSON.parse(JSON.stringify(this.projectAssignedResources[ar])) // .data
+                            );
+                        }
+                    }
+
                     // add property 'UsersAvailable' to actual Roles_r (Role required)
                     this.templProjectRolesRequired[0].Roles__r[rr]['UsersAvailable'] = [];
                     for (let ua = 0; ua < this.usersAvailableForProject.length; ua++) {
@@ -69,10 +115,13 @@ export default class AssignResourcesByRole extends LightningElement {
                             );
                         }
                     }
+
                 }
             }
             console.log('this.templProjectRolesRequired after');
             console.log(this.templProjectRolesRequired);
+
+            this.isLoading = false;
 
         } else if (result.error) {
             this.error = result.error;
@@ -89,9 +138,37 @@ export default class AssignResourcesByRole extends LightningElement {
             console.log(this.projectStartDate);
         }
 
-        if (this.projectAssignedResources.data) {
-            console.log('this.projectAssignedResources.data');
-            console.log(this.projectAssignedResources.data);
+        /*
+        console.log('this.projectAssignedResources renderedCallback');
+        console.log(this.projectAssignedResources);
+        if( ! this.projectAssignedResources == undefined) {
+            if (this.projectAssignedResources.data) {
+                console.log('this.projectAssignedResources.data');
+                console.log(this.projectAssignedResources.data);
+            }
+        }
+        */
+    }
+
+    setElementDisabledByIdName(id, strName, value) {
+        [...this.template.querySelectorAll('lightning-input')]
+        .filter(element => (element.dataset.id == id) && (element.name == strName))
+        .map(element => { element.disabled = value; });
+    }
+
+    handleResourceChecked(event) {
+        let resourceId = event.target.dataset.id;
+        let checkValue = event.target.checked;
+        console.log(resourceId);
+        console.log(checkValue);
+
+        if(checkValue) {
+            this.setElementDisabledByIdName(resourceId, 'start-date', false);
+            this.setElementDisabledByIdName(resourceId, 'end-date', false);
+        }
+        else {
+            this.setElementDisabledByIdName(resourceId, 'start-date', true);
+            this.setElementDisabledByIdName(resourceId, 'end-date', true);
         }
     }
 
@@ -109,7 +186,7 @@ export default class AssignResourcesByRole extends LightningElement {
         return ((dateIn.getTime() >= projStart.getTime()) && (dateIn.getTime() <= projEnd.getTime()))
     }
 
-    getBusinessHoursBetweenTwoDates(d0, d1) {
+    getBusinessDaysBetweenTwoDates(d0, d1) {
         var stDate = new Date(d0); // Date.parse(d0);
         var enDate = new Date(d1); // Date.parse(d1);
         // Validate input
@@ -221,13 +298,14 @@ export default class AssignResourcesByRole extends LightningElement {
             event.target.classList.add('slds-has-error');
             alert(alertMessages);
             event.target.value = '';
+            this.setElementValueByIdName(resourceId, 'hours', '');
             return false;
         }
         event.target.classList.remove('slds-has-error');
 
         // calculate business hours
         if(startDate && endDate) {
-            let daysBetweenDates = this.getBusinessHoursBetweenTwoDates(startDate, endDate);
+            let daysBetweenDates = this.getBusinessDaysBetweenTwoDates(startDate, endDate);
 
             this.setElementValueByIdName(resourceId, 'hours', daysBetweenDates*8);
 
@@ -245,6 +323,8 @@ export default class AssignResourcesByRole extends LightningElement {
             .map(element => [element.dataset.id, element.dataset.role]);
         console.log(checkboxsSelected);
 
+        let countErrors = 0;
+
         checkboxsSelected.forEach((userIdRoleArr, idx) => {
             console.log(idx);
             console.log(userIdRoleArr);
@@ -255,12 +335,18 @@ export default class AssignResourcesByRole extends LightningElement {
             .map(element => {
                 console.log(element.value);
                 checkboxsSelected[idx].push(element.value);
+                if( ! this.bDateBetweenProjectDates(element.value)) {
+                    countErrors++;
+                }
             });
             [...this.template.querySelectorAll('lightning-input')]
             .filter(element => (element.dataset.id == userIdRoleArr[0]) && (element.name == 'end-date')) // idx
             .map(element => {
                 console.log(element.value);
                 checkboxsSelected[idx].push(element.value);
+                if( ! this.bDateBetweenProjectDates(element.value)) {
+                    countErrors++;
+                }
             });
             [...this.template.querySelectorAll('lightning-input')]
             .filter(element => (element.dataset.id == userIdRoleArr[0]) && (element.name == 'hours')) // idx
@@ -271,28 +357,35 @@ export default class AssignResourcesByRole extends LightningElement {
         })
         console.log(checkboxsSelected);
 
-        if (checkboxsSelected.length > 0) {
+        if (checkboxsSelected.length > 0 && countErrors==0) {
+            this.isLoading = true;
             insertUsersToProject({projectId: this.recordId, startDate: this.projectStartDate, endDate: this.projectEndDate, usersId: checkboxsSelected})
             .then((result) => {
-                this.handleSuccess();
+                this.showToastSuccess();
                 this.result = result;
                 // clean the form with apex refresh
+                refreshApex(this.wireProjectAssignedResources);
                 refreshApex(this.wireResourcesAvailable);
                 // updateRecord({ fields: { Id: this.recordId } });
                 console.log('RESULT:');
                 console.log(result);
+                this.isLoading = false;
             })
             .catch((error) => {
                 this.error = error;
                 console.log(error);
+                this.showToastError('Error', error.body.message);
+                this.isLoading = false;
             })
-
         }
         console.log(checkboxsSelected);
 
+        if(countErrors > 0) {
+            this.showToastError('Form Error!', 'Please complete all required Fields.')
+        }
     }
 
-    handleSuccess() {
+    showToastSuccess() {
         this.dispatchEvent( new ShowToastEvent({
             title: 'Users Assigned!',
             message: '',
@@ -300,6 +393,15 @@ export default class AssignResourcesByRole extends LightningElement {
         }));
     }
 
+    showToastError(errorTitle, errorMessage) {
+        this.dispatchEvent( new ShowToastEvent({
+            title: errorTitle,
+            message: errorMessage,
+            variant: 'error'
+        }));
+    }
+
+    /*
     handleSubmit(event) {
         event.preventDefault(); // stop the form from submitting
         const fields = event.detail.fields;
@@ -330,7 +432,7 @@ export default class AssignResourcesByRole extends LightningElement {
                 console.log(this.projectRolesRequired);
             })
         */
-    }
+    // }
 
 
     /*
