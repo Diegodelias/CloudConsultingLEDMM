@@ -2,14 +2,25 @@
 
     <lightning-card title="Resources Assignment by role" icon-name="standard:user_role">
         <template if:true={projectRolesRequired.data}>
-            <p>1359</p>
+            <p>2212</p>
             <template for:each={projectRolesRequired.data} for:item="Project">
             <!--h1>{projectRolesRequired.data.Name}</h1-->
-            <h1 key={Project.Id}>From {templProjectStartDate} <!--{Project.Start_Date__c} -->
-                to {Project.End_Date__c}. {Project.Hours_Sold__c}hs. sold.</h1>
+            <h1 key={Project.Id}>From <lightning-formatted-date-time value={Project.Start_Date__c} year="numeric" month="2-digit" day="2-digit" time-zone="UTC"></lightning-formatted-date-time>&nbsp;<!--{Project.Start_Date__c} {templProjectStartDate} -->
+                to <lightning-formatted-date-time value={Project.End_Date__c} day="2-digit" month="2-digit" year="numeric" time-zone="UTC"></lightning-formatted-date-time>
+                . {Project.Hours_Sold__c}hs. sold.</h1>
             <!--h1>Status: {projectRolesRequired.data.Status__c}</h1-->
             </template>
         </template>
+
+
+        
+
+
+        <!--lightning-spinner></lightning-spinner-->
+        <lightning-accordion></lightning-accordion>
+
+
+
 
         <template if:true={templProjectRolesRequired}><!--projectRolesRequired.data-->
             <template for:each={templProjectRolesRequired} for:item="Project"><!--projectRolesRequired.data-->
@@ -31,16 +42,17 @@
                                     <div class="slds-grid" key={resource.Id} id={resource.Id}>
                                         <div class="slds-col margin-not-null div-nowrap">
                                             <label class="slds-form-element__label" for={resource.Id}>Select User</label>
-                                            <lightning-input id={resource.Id} key={resource.Id} type="checkbox" label={resource.Name} data-id={resource.Id} value={resource.Id}></lightning-input>
+                                            <lightning-input id={resource.Id} key={resource.Id} type="checkbox" label={resource.Name}
+                                                data-id={resource.Id} data-role={resource.UserRole.Name} value={resource.Id}></lightning-input>
                                         </div>
                                         <div class="slds-col margin-not-null">
-                                            <lightning-input key={resource.Id} type="date" name="start-date" label="Start Date"></lightning-input>
+                                            <lightning-input key={resource.Id} data-id={resource.Id} type="date" name="start-date" onchange={handleChangeDate} value="" label="Start Date" date-style="short" class="date-input"></lightning-input><!-- onfocusout={handleDateFocusOut}-->
                                         </div>
                                         <div class="slds-col margin-not-null">
-                                            <lightning-input key={resource.Id} type="date" name="end-date" label="End Date"></lightning-input>
+                                            <lightning-input key={resource.Id} data-id={resource.Id} type="date" name="end-date" onchange={handleChangeDate} value="" label="End Date" date-style="short" class="date-input"></lightning-input>
                                         </div>
                                         <div class="slds-col margin-not-null">
-                                            <lightning-input class="hours-input" key={resource.Id} type="number" name="hours" label="Hours"></lightning-input>
+                                            <lightning-input key={resource.Id} data-id={resource.Id} type="number" name="hours" value="" label="Hours" class="hours-input"></lightning-input>
                                         </div>
                                     </div>
                                 </template><!--{resource.UserRole.Name}-->
