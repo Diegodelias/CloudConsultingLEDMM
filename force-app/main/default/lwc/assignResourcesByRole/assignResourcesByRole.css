@@ -8,6 +8,9 @@ h1 {
 .role-assign {
     margin-top: 15px;
 }
+.date-input {
+    width: 115px;
+}
 .hours-input {
     width: 50px;
 }
