@@ -23,9 +23,12 @@ public without sharing class ProjectData {
 
     @AuraEnabled(cacheable=true)
     public static List<Resource__c> getAssignedResources(Id projectId) {
-        List<Resource__c> assignedResList = [SELECT Id, User__r.Name, Start_Date__c, End_Date__c, Hours__c, Role__c 
-                                      FROM Resource__c 
-                                      WHERE Project__c = :projectId];
+        List<Resource__c> assignedResList = [
+            SELECT Id, User__r.Name, Start_Date__c, End_Date__c, Hours__c, Role__c 
+            FROM Resource__c 
+            WHERE Project__c = :projectId
+            ORDER BY Role__c DESC
+        ];
         return assignedResList;
     }
 
