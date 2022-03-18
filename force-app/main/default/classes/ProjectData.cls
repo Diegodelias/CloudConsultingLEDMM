@@ -39,14 +39,13 @@ public without sharing class ProjectData {
         system.debug(startDate);
         system.debug(endDate);
         List<Resource__c> resourcesInProjects = [
-            SELECT User__c // Id, Name, Start_Date__c, End_Date__c 
+            SELECT User__c, User__r.Name // Id, Name, Start_Date__c, End_Date__c 
             FROM Resource__c 
-            WHERE NOT(
-                            ((Start_Date__c >= :startDate) AND (End_Date__c <= :startDate))
-                            OR ((Start_Date__c >= :endDate) AND (End_Date__c <= :endDate))
-                        OR
-                            ((Start_Date__c < :startDate) AND (End_Date__c > :endDate))
-                    )
+            WHERE ((Start_Date__c <= :startDate) AND (End_Date__c >= :startDate))
+					OR ((Start_Date__c <= :endDate) AND (End_Date__c >= :endDate))
+				OR
+					((Start_Date__c >= :startDate) AND (End_Date__c <= :endDate))
+                    
         ];
         System.debug(resourcesInProjects);
 
@@ -54,6 +53,7 @@ public without sharing class ProjectData {
         for (Resource__c res : resourcesInProjects) {
             usersIdNOTAvailable.add(res.User__c);
             System.debug(res.User__c);
+            System.debug(res.User__r.Name);
         }
         System.debug(usersIdNOTAvailable);
 
