@@ -3,7 +3,7 @@
 
     <lightning-card title="Resources Assignment by Role" icon-name="standard:user_role">
         <template if:true={projectRolesRequired.data}>
-            <p>1729</p>
+            <p>1917</p>
             <template for:each={projectRolesRequired.data} for:item="Project">
             <!--h1>{projectRolesRequired.data.Name}</h1-->
             <h1 key={Project.Id}>From <lightning-formatted-date-time value={Project.Start_Date__c} year="numeric" month="2-digit" day="2-digit" time-zone="UTC"></lightning-formatted-date-time>&nbsp;
