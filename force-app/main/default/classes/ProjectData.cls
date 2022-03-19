@@ -69,17 +69,16 @@ public without sharing class ProjectData {
     }
 
     @AuraEnabled(cacheable=false)
-    public static List<Resource__c> insertUsersToProject(Id projectId, Date startDate, Date endDate, List<List<String>> usersId) {
+    public static List<Resource__c> insertUsersToProject(Id projectId, List<List<String>> users) { //  Date startDate, Date endDate,
         List<Resource__c> resources = new List<Resource__c>();
 
-        // for (Id userId : usersId) {
-        for (List<String> user : usersId) {
+        for (List<String> user : users) {
             Resource__c resource = new Resource__c(
                 Project__c = projectId,
-                User__c = user[0], // userId,
-                Role__c = user[1], // '',
-                Start_Date__c = date.valueOf(user[2]), // startDate,
-                End_Date__c = date.valueOf(user[3]), // endDate
+                User__c = user[0],
+                Role__c = user[1],
+                Start_Date__c = date.valueOf(user[2]),
+                End_Date__c = date.valueOf(user[3]),
                 Hours__c = integer.valueOf(user[4])
             );
             resources.add(resource);
