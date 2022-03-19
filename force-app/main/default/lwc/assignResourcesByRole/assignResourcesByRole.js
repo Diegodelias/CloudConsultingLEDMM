@@ -25,6 +25,7 @@ export default class AssignResourcesByRole extends LightningElement {
 
     projectStartDate;
     projectEndDate;
+    projectRequiredRolesList;
 
     isLoading = true;
 
@@ -39,8 +40,32 @@ export default class AssignResourcesByRole extends LightningElement {
 
     // updateRecord({ fields: { Id: this.recordId } });
 
+
+    renderedCallback() {
+        if (this.projectRolesRequired.data) {
+            console.log('this.projectRolesRequired.data'); console.log(this.projectRolesRequired.data);
+            this.projectStartDate = getSObjectValue(this.projectRolesRequired.data[0], PROJECT_START_DATE);
+            this.projectEndDate = getSObjectValue(this.projectRolesRequired.data[0], PROJECT_END_DATE);
+            console.log(this.projectStartDate); console.log(this.projectEndDate);
+
+            console.log(this.projectRequiredRolesList);
+            if( ! this.projectRequiredRolesList) {
+                this.projectRequiredRolesList = [];
+                this.projectRolesRequired.data.forEach(roleReqRecord => {
+                    roleReqRecord.Roles__r.forEach(role => {
+                        this.projectRequiredRolesList.push(role.Role__c);
+                    });
+                });
+                console.log(this.projectRequiredRolesList);
+            }
+        }
+
+    }
+
+
     @wire(getProjectRolesRequired, { projectId: '$recordId' })
     projectRolesRequired;
+
 
     @wire(getAssignedResources, { projectId: '$recordId' }) // projectAssignedResources
     wireGetProjectAssignedResources(result) {
@@ -56,20 +81,8 @@ export default class AssignResourcesByRole extends LightningElement {
         }
     }
 
-    get templProjectStartDate() {
-        let retStartDate = '';
-        if (this.projectRolesRequired.data) {
-            console.log('this.projectRolesRequired.data');
-            console.log(this.projectRolesRequired.data);
-            retStartDate = getSObjectValue(this.projectRolesRequired.data[0], PROJECT_START_DATE);
-            this.projectStartDate = retStartDate;
-            this.projectEndDate = getSObjectValue(this.projectRolesRequired.data[0], PROJECT_END_DATE);
-            console.log(retStartDate);
-        }
-        return retStartDate;
-    }
 
-    @wire(getUsersAvailableForProject, { startDate: '$projectStartDate', endDate: '$projectEndDate', roleList: ['Squad lead', 'Consultant', 'Architect', 'Developer']  }) // Date.parse("Aug 9, 1995") Date.parse("Aug 15, 1995")
+    @wire(getUsersAvailableForProject, { startDate: '$projectStartDate', endDate: '$projectEndDate', roleList: '$projectRequiredRolesList' }) // '$projectRequiredRolesList' ['Squad lead', 'Consultant', 'Architect', 'Developer']
     resourcesAvailable(result) { // { error, data }) {
         this.wireResourcesAvailable = result;
         if (result.data) {
@@ -129,32 +142,13 @@ export default class AssignResourcesByRole extends LightningElement {
         }
     }
 
-    renderedCallback() {
-        if (this.projectRolesRequired.data) {
-            console.log('this.projectRolesRequired.data');
-            console.log(this.projectRolesRequired.data);
-            this.projectStartDate = getSObjectValue(this.projectRolesRequired.data[0], PROJECT_START_DATE);
-            this.projectEndDate = getSObjectValue(this.projectRolesRequired.data[0], PROJECT_END_DATE);
-            console.log(this.projectStartDate);
-        }
-
-        /*
-        console.log('this.projectAssignedResources renderedCallback');
-        console.log(this.projectAssignedResources);
-        if( ! this.projectAssignedResources == undefined) {
-            if (this.projectAssignedResources.data) {
-                console.log('this.projectAssignedResources.data');
-                console.log(this.projectAssignedResources.data);
-            }
-        }
-        */
-    }
 
     setElementDisabledByIdName(id, strName, value) {
         [...this.template.querySelectorAll('lightning-input')]
         .filter(element => (element.dataset.id == id) && (element.name == strName))
         .map(element => { element.disabled = value; });
     }
+
 
     handleResourceChecked(event) {
         let resourceId = event.target.dataset.id;
@@ -359,7 +353,7 @@ export default class AssignResourcesByRole extends LightningElement {
 
         if (checkboxsSelected.length > 0 && countErrors==0) {
             this.isLoading = true;
-            insertUsersToProject({projectId: this.recordId, startDate: this.projectStartDate, endDate: this.projectEndDate, usersId: checkboxsSelected})
+            insertUsersToProject({projectId: this.recordId, users: checkboxsSelected}) //  startDate: this.projectStartDate, endDate: this.projectEndDate,
             .then((result) => {
                 this.showToastSuccess();
                 this.result = result;
