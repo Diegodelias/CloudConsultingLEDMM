@@ -4,10 +4,10 @@ import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { refreshApex } from '@salesforce/apex';
 // import { updateRecord } from 'lightning/uiRecordApi';
 
-import getProjectRolesRequired from '@salesforce/apex/ProjectData.getProjectRolesRequired';
-import getAssignedResources from '@salesforce/apex/ProjectData.getAssignedResources';
-import getUsersAvailableForProject from '@salesforce/apex/ProjectData.getUsersAvailableForProject';
-import insertUsersToProject from '@salesforce/apex/ProjectData.insertUsersToProject';
+import getProjectRolesRequired from '@salesforce/apex/ProjectDataService.getProjectRolesRequired';
+import getAssignedResources from '@salesforce/apex/ProjectDataService.getAssignedResources';
+import getUsersAvailableForProject from '@salesforce/apex/ProjectDataService.getUsersAvailableForProject';
+import insertResourcesToProject from '@salesforce/apex/ProjectDataService.insertResourcesToProject';
 
 import PROJECT_START_DATE from '@salesforce/schema/Project__c.Start_Date__c'
 import PROJECT_END_DATE from '@salesforce/schema/Project__c.End_Date__c'
@@ -353,7 +353,7 @@ export default class AssignResourcesByRole extends LightningElement {
 
         if (checkboxsSelected.length > 0 && countErrors==0) {
             this.isLoading = true;
-            insertUsersToProject({projectId: this.recordId, users: checkboxsSelected}) //  startDate: this.projectStartDate, endDate: this.projectEndDate,
+            insertResourcesToProject({projectId: this.recordId, users: checkboxsSelected}) //  startDate: this.projectStartDate, endDate: this.projectEndDate,
             .then((result) => {
                 this.showToastSuccess();
                 this.result = result;

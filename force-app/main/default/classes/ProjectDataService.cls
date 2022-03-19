@@ -1,4 +1,4 @@
-public without sharing class ProjectData {
+public without sharing class ProjectDataService {
 
     @AuraEnabled(cacheable=true)
     public static List<Project__c> getProjectRolesRequired(Id projectId) {
@@ -9,7 +9,7 @@ public without sharing class ProjectData {
                 (
                     SELECT Hours_Covered__c, Hours_Required__c, Role__c 
                     FROM Roles__r
-                    ORDER BY Role__c
+                    ORDER BY Role__c DESC
                 )
             FROM Project__c
             WHERE Id = :projectId
@@ -69,7 +69,7 @@ public without sharing class ProjectData {
     }
 
     @AuraEnabled(cacheable=false)
-    public static List<Resource__c> insertUsersToProject(Id projectId, List<List<String>> users) { //  Date startDate, Date endDate,
+    public static List<Resource__c> insertResourcesToProject(Id projectId, List<List<String>> users) { //  Date startDate, Date endDate,
         List<Resource__c> resources = new List<Resource__c>();
 
         for (List<String> user : users) {
