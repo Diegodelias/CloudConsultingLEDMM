@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Resources_dates_match_Project_dates</fullName>
+    <active>true</active>
+    <description>Start_Date_and_End_Date_must_match_Project_Dates</description>
+    <errorConditionFormula>(Start_Date__c &lt;  Project__r.Start_Date__c) ||
+ (End_Date__c &gt;  Project__r.End_Date__c)</errorConditionFormula>
+    <errorMessage>Resources_Start_Date_and_End_Date_must_match_its_Project_Dates</errorMessage>
+</ValidationRule>
