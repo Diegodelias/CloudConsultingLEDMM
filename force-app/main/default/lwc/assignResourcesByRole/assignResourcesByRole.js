@@ -2,6 +2,7 @@ import { api, LightningElement, wire } from 'lwc';
 import { getSObjectValue } from '@salesforce/apex';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { refreshApex } from '@salesforce/apex';
+import { deleteRecord, getRecordNotifyChange } from 'lightning/uiRecordApi';
 // import { updateRecord } from 'lightning/uiRecordApi';
 
 import getProjectRolesRequired from '@salesforce/apex/ProjectDataService.getProjectRolesRequired';
@@ -31,10 +32,12 @@ export default class AssignResourcesByRole extends LightningElement {
 
     assignedResourcesDataColumns = AssignedResourcesDataColumns;
 
-    wireResourcesAvailable;
+    wireProjectRolesRequired;
     wireProjectAssignedResources;
+    wireResourcesAvailable;
 
     templProjectRolesRequired;
+    projectRolesRequired;
     projectAssignedResources;
     usersAvailableForProject;
 
@@ -42,16 +45,16 @@ export default class AssignResourcesByRole extends LightningElement {
 
 
     renderedCallback() {
-        if (this.projectRolesRequired.data) {
-            console.log('this.projectRolesRequired.data'); console.log(this.projectRolesRequired.data);
-            this.projectStartDate = getSObjectValue(this.projectRolesRequired.data[0], PROJECT_START_DATE);
-            this.projectEndDate = getSObjectValue(this.projectRolesRequired.data[0], PROJECT_END_DATE);
+        if (this.projectRolesRequired) { // .data
+            console.log('this.projectRolesRequired'); console.log(this.projectRolesRequired); // .data .data
+            this.projectStartDate = getSObjectValue(this.projectRolesRequired[0], PROJECT_START_DATE); // .data
+            this.projectEndDate = getSObjectValue(this.projectRolesRequired[0], PROJECT_END_DATE); // .data
             console.log(this.projectStartDate); console.log(this.projectEndDate);
 
             console.log(this.projectRequiredRolesList);
             if( ! this.projectRequiredRolesList) {
                 this.projectRequiredRolesList = [];
-                this.projectRolesRequired.data.forEach(roleReqRecord => {
+                this.projectRolesRequired.forEach(roleReqRecord => { // .data
                     roleReqRecord.Roles__r.forEach(role => {
                         this.projectRequiredRolesList.push(role.Role__c);
                     });
@@ -64,9 +67,24 @@ export default class AssignResourcesByRole extends LightningElement {
 
 
     @wire(getProjectRolesRequired, { projectId: '$recordId' })
-    projectRolesRequired;
+    wireGetProjectRolesRequired(result) {
+        this.isLoading = true;
+        this.wireProjectRolesRequired = result;
+        if(result.data) {
+            this.projectRolesRequired = result.data;
+            console.log('this.projectRolesRequired wire');
+            console.log(this.projectRolesRequired);
+            this.error = undefined;
+            // refreshApex(this.wireProjectAssignedResources);
+            this.getProjectAssignedResources();
+        } else if(result.error) {
+            this.error = result.error;
+            this.projectRolesRequired = undefined;
+        }
+    }
 
 
+    /*
     @wire(getAssignedResources, { projectId: '$recordId' }) // projectAssignedResources
     wireGetProjectAssignedResources(result) {
         this.wireProjectAssignedResources = result;
@@ -75,13 +93,34 @@ export default class AssignResourcesByRole extends LightningElement {
             console.log('this.projectAssignedResources wire');
             console.log(this.projectAssignedResources);
             this.error = undefined;
+            refreshApex(this.wireResourcesAvailable);
         } else if(result.error) {
             this.error = result.error;
             this.projectAssignedResources = undefined;
         }
     }
+    */
 
 
+    getProjectAssignedResources() {
+        getAssignedResources({ projectId: this.recordId }) // projectAssignedResources
+        .then((result) => {
+            this.wireProjectAssignedResources = result;
+            this.projectAssignedResources = result;
+            console.log('this.projectAssignedResources wire');
+            console.log(this.projectAssignedResources);
+            this.error = undefined;
+            // refreshApex(this.wireResourcesAvailable);
+            this.getProjectUsersAvailable();
+        })
+        .catch((error) => {
+            this.error = error;
+            this.projectAssignedResources = undefined;
+        })
+    }
+
+
+    /*
     @wire(getUsersAvailableForProject, { startDate: '$projectStartDate', endDate: '$projectEndDate', roleList: '$projectRequiredRolesList' }) // '$projectRequiredRolesList' ['Squad lead', 'Consultant', 'Architect', 'Developer']
     resourcesAvailable(result) { // { error, data }) {
         this.wireResourcesAvailable = result;
@@ -91,7 +130,7 @@ export default class AssignResourcesByRole extends LightningElement {
             console.log(this.projectAssignedResources); // .data
             console.log(this.usersAvailableForProject);
 
-            this.templProjectRolesRequired = JSON.parse(JSON.stringify(this.projectRolesRequired.data));// [0]
+            this.templProjectRolesRequired = JSON.parse(JSON.stringify(this.projectRolesRequired));// [0] .data
             console.log('this.templProjectRolesRequired before');
             console.log(this.templProjectRolesRequired);
             if (this.templProjectRolesRequired[0].Roles__r.length > 0) {
@@ -99,8 +138,13 @@ export default class AssignResourcesByRole extends LightningElement {
                 for (let rr = 0; rr < this.templProjectRolesRequired[0].Roles__r.length; rr++) {
 
                     // add accordion label
-                    this.templProjectRolesRequired[0].Roles__r[rr]['accordionLabel'] = 'Resources available to assign for "' + 
+                    this.templProjectRolesRequired[0].Roles__r[rr]['AccordionLabel'] = 'Resources available to assign for "' + 
                         this.templProjectRolesRequired[0].Roles__r[rr].Role__c + '" role.';
+
+                    // add boolean to show Accordion only if Hours Required are not covered
+                    this.templProjectRolesRequired[0].Roles__r[rr]['BoolShowAccordion'] = (
+                        this.templProjectRolesRequired[0].Roles__r[rr].Hours_Covered__c < this.templProjectRolesRequired[0].Roles__r[rr].Hours_Required__c
+                    );
 
                     // add property 'AssignedResources' to actual Roles_r (Role required)
                     this.templProjectRolesRequired[0].Roles__r[rr]['AssignedResources'] = false;
@@ -134,12 +178,82 @@ export default class AssignResourcesByRole extends LightningElement {
             console.log('this.templProjectRolesRequired after');
             console.log(this.templProjectRolesRequired);
 
-            this.isLoading = false;
-
         } else if (result.error) {
             this.error = result.error;
             this.usersAvailableForProject = undefined;
         }
+
+        this.isLoading = false;
+    }
+    */
+
+
+    getProjectUsersAvailable() {
+        getUsersAvailableForProject( { startDate: this.projectStartDate, endDate: this.projectEndDate, roleList: this.projectRequiredRolesList })
+        .then((result) => {
+            this.wireResourcesAvailable = result;
+            this.usersAvailableForProject = result;
+            this.error = undefined;
+            console.log(this.projectAssignedResources);
+            console.log(this.usersAvailableForProject);
+
+            this.templProjectRolesRequired = JSON.parse(JSON.stringify(this.projectRolesRequired));
+            console.log('this.templProjectRolesRequired before');
+            console.log(this.templProjectRolesRequired);
+            if (this.templProjectRolesRequired[0].Roles__r.length > 0) {
+                console.log(this.templProjectRolesRequired[0].Roles__r);
+                for (let rr = 0; rr < this.templProjectRolesRequired[0].Roles__r.length; rr++) {
+
+                    // add accordion label
+                    this.templProjectRolesRequired[0].Roles__r[rr]['AccordionLabel'] = 'Resources available to assign for "' + 
+                        this.templProjectRolesRequired[0].Roles__r[rr].Role__c + '" role.';
+
+                    // add boolean to show Accordion only if Hours Required are not covered
+                    this.templProjectRolesRequired[0].Roles__r[rr]['BoolShowAccordion'] = (
+                        this.templProjectRolesRequired[0].Roles__r[rr].Hours_Covered__c < this.templProjectRolesRequired[0].Roles__r[rr].Hours_Required__c
+                    );
+
+                    // add property 'AssignedResources' to actual Roles_r (Role required)
+                    this.templProjectRolesRequired[0].Roles__r[rr]['AssignedResources'] = false;
+                    for (let ar = 0; ar < this.projectAssignedResources.length; ar++) {
+                        if (this.templProjectRolesRequired[0].Roles__r[rr].Role__c 
+                            == this.projectAssignedResources[ar].Role__c) {
+                            console.log(this.projectAssignedResources[ar]);
+                            if(this.templProjectRolesRequired[0].Roles__r[rr]['AssignedResources'] === false) {
+                                this.templProjectRolesRequired[0].Roles__r[rr]['AssignedResources'] = [];
+                            }
+                            this.templProjectRolesRequired[0].Roles__r[rr]['AssignedResources'].push(
+                                JSON.parse(JSON.stringify(this.projectAssignedResources[ar]))
+                            );
+                        }
+                    }
+
+                    // add property 'UsersAvailable' to actual Roles_r (Role required)
+                    this.templProjectRolesRequired[0].Roles__r[rr]['UsersAvailable'] = [];
+                    for (let ua = 0; ua < this.usersAvailableForProject.length; ua++) {
+                        if (this.templProjectRolesRequired[0].Roles__r[rr].Role__c 
+                            == this.usersAvailableForProject[ua].UserRole.Name) {
+                            console.log(this.usersAvailableForProject[ua]);
+                            this.templProjectRolesRequired[0].Roles__r[rr]['UsersAvailable'].push(
+                                JSON.parse(JSON.stringify(this.usersAvailableForProject[ua]))
+                            );
+                        }
+                    }
+
+                }
+            }
+            console.log('this.templProjectRolesRequired after');
+            console.log(this.templProjectRolesRequired);
+
+        })
+        .catch((error) => {
+            this.error = error;
+            this.usersAvailableForProject = undefined;
+        })
+        .finally(() => {
+            this.isLoading = false;
+        })
+
     }
 
 
@@ -170,7 +284,7 @@ export default class AssignResourcesByRole extends LightningElement {
         const d = new Date(dateValue);
         let dayOfTheWeek = d.getDay();
         console.log(dayOfTheWeek);
-        return !(dayOfTheWeek==0 || dayOfTheWeek==6);
+        return !(dayOfTheWeek==5 || dayOfTheWeek==6);
     }
 
     bDateBetweenProjectDates(dateValue) {
@@ -207,12 +321,12 @@ export default class AssignResourcesByRole extends LightningElement {
             days = days - 2;      
     
         // Remove start day if span starts on Sunday but ends before Saturday
-        if (startDayW == 0 && endDayW != 6)
-            days = days - 1  
+        // if (startDayW == 0 && endDayW != 6) days = days - 1  
+        if (startDayW == 6 && endDayW != 5) days = days - 1  
     
         // Remove end day if span ends on Saturday but starts after Sunday
-        if (endDayW == 6 && startDayW != 0)
-            days = days - 1  
+        // if (endDayW == 6 && startDayW != 0) days = days - 1  
+        if (endDayW == 5 && startDayW != 6) days = days - 1  
     
         // console.log('days'); console.log(days);
         return days;
@@ -358,18 +472,19 @@ export default class AssignResourcesByRole extends LightningElement {
                 this.showToastSuccess();
                 this.result = result;
                 // clean the form with apex refresh
-                refreshApex(this.wireProjectAssignedResources);
-                refreshApex(this.wireResourcesAvailable);
+                this.refreshApexWire();
+
                 // updateRecord({ fields: { Id: this.recordId } });
                 console.log('RESULT:');
                 console.log(result);
-                this.isLoading = false;
             })
             .catch((error) => {
                 this.error = error;
                 console.log(error);
                 this.showToastError('Error', error.body.message);
-                this.isLoading = false;
+            })
+            .finally(() => {
+                // this.isLoading = false;
             })
         }
         console.log(checkboxsSelected);
@@ -393,6 +508,56 @@ export default class AssignResourcesByRole extends LightningElement {
             message: errorMessage,
             variant: 'error'
         }));
+    }
+
+    refreshApexWire() {
+        refreshApex(this.wireProjectRolesRequired);
+        // refreshApex(this.wireProjectAssignedResources);
+        // refreshApex(this.wireResourcesAvailable);
+        // getRecordNotifyChange(recordIds);
+    }
+
+    handleRefresh(event) {
+        // this.isLoading = true;
+        console.log('Refresh');
+        this.refreshApexWire();
+    }
+
+    handleDeleteResource(event) {
+        console.log(event.target.dataset.id);
+        let optionDelete = confirm('Are you sure you want to Delete the Resource?');
+        if(optionDelete) {
+            this.deleteResourceById(event.target.dataset.id);
+        }
+    }
+
+    deleteResourceById(resourceId) {
+        console.log(resourceId);
+        this.isLoading = true;
+        deleteRecord(resourceId)
+            .then(() => {
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: 'Success',
+                        message: 'Resource Deleted',
+                        variant: 'success'
+                    })
+                );
+            })
+            .catch(error => {
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: 'Error deleting Resource',
+                        message: error.body.message,
+                        variant: 'error'
+                    })
+                );
+            })
+            .finally(() => {
+              // this.isLoading = false;
+              this.refreshApexWire();
+            });
+
     }
 
     /*

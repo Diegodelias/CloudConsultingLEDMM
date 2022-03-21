@@ -21,7 +21,7 @@ public without sharing class ProjectDataService {
     }
 
 
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled(cacheable=false)
     public static List<Resource__c> getAssignedResources(Id projectId) {
         List<Resource__c> assignedResList = [
             SELECT Id, User__r.Name, Start_Date__c, End_Date__c, Hours__c, Role__c 
@@ -33,7 +33,7 @@ public without sharing class ProjectDataService {
     }
 
 
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled(cacheable=false)
     public static List<User> getUsersAvailableForProject(Date startDate, Date endDate, List<String> roleList) {
 
         system.debug(startDate);
