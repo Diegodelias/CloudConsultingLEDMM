@@ -2,9 +2,15 @@
 <template>
 
     <lightning-card title="Resources Assignment by Role" icon-name="standard:user_role">
-        <template if:true={projectRolesRequired.data}>
-            <p>1917</p>
-            <template for:each={projectRolesRequired.data} for:item="Project">
+      <!--lightning-button-icon onclick={handleRefresh} icon-name="utility:refresh" slot="actions" alternative-text="Refresh" title="Refresh"></lightning-button-icon-->
+      <button onclick={handleRefresh} class="slds-button slds-button_icon slds-button_icon-border" title="Refresh" slot="actions">
+        <svg class="slds-button__icon" aria-hidden="true">
+            <use xlink:href="/_slds/icons/utility-sprite/svg/symbols.svg?cache=9.28.0#refresh"></use>
+        </svg>
+      </button>
+        <!--p>0358</p-->
+        <template if:true={projectRolesRequired}><!-- .data -->
+            <template for:each={projectRolesRequired} for:item="Project"><!-- .data -->
             <!--h1>{projectRolesRequired.data.Name}</h1-->
             <h1 key={Project.Id}>From <lightning-formatted-date-time value={Project.Start_Date__c} year="numeric" month="2-digit" day="2-digit" time-zone="UTC"></lightning-formatted-date-time>&nbsp;
                 to <lightning-formatted-date-time value={Project.End_Date__c} day="2-digit" month="2-digit" year="numeric" time-zone="UTC"></lightning-formatted-date-time>
@@ -47,6 +53,7 @@
                                     <div class="slds-truncate" title={column.label}>{column.label}</div>
                                   </th>
                                 </template>
+                                <th scope="col">&nbsp;</th>
                               </tr>
                             </thead>
 
@@ -73,6 +80,9 @@
                                 <td data-label="Hours">
                                   <div class="slds-truncate" title={resource.Hours__c} style="text-align: center;">{resource.Hours__c}</div>
                                 </td>
+                                <td>
+                                  <lightning-button-icon onclick={handleDeleteResource} data-id={resource.Id} icon-name="utility:delete" variant="bare" alternative-text="Delete Resource" title="Delete Resource"></lightning-button-icon>
+                                </td>
                               </tr>
                               </template>
 
@@ -83,9 +93,10 @@
 
 
                       <!-- Iterate Resources available -->
-                      <lightning-accordion-section key={Role.Id} name="" label={Role.accordionLabel}><!-- "Resources available to assign for {Role.Role__c} role." -->
-                        <!--h1 class="role-assign" key={Role.Id}>Resources available to assign for "{Role.Role__c}" role.</h1-->
-                        <template if:true={Role.UsersAvailable}>
+                      <template if:true={Role.BoolShowAccordion}>
+                        <lightning-accordion-section key={Role.Id} name="" label={Role.AccordionLabel}><!-- "Resources available to assign for {Role.Role__c} role." -->
+                          <!--h1 class="role-assign" key={Role.Id}>Resources available to assign for "{Role.Role__c}" role.</h1-->
+                          <template if:true={Role.UsersAvailable}>
 
                             <template for:each={Role.UsersAvailable} for:item="resource" for:index="index">
                                 <div class="slds-grid" key={resource.Id} id={resource.Id}>
@@ -128,8 +139,9 @@
                                 <lightning-input key={resource.Id} type="date" name="end-date" label="End Date"></lightning-input>
                             </div-->
 
-                        </template>
-                      </lightning-accordion-section>
+                          </template>
+                        </lightning-accordion-section>
+                      </template>
 
                     </template>
 
