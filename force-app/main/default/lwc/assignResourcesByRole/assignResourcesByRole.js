@@ -552,6 +552,7 @@ export default class AssignResourcesByRole extends LightningElement {
                         variant: 'error'
                     })
                 );
+                this.isLoading = false;
             })
             .finally(() => {
               // this.isLoading = false;
